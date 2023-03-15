@@ -2,6 +2,7 @@ use crate::{
     impls::dao::types::{
         Data,
         Proposal,
+        Project,
         DaoError,
         Vote,
         VoteStatus,
@@ -36,6 +37,11 @@ use ink::ToAccountId;
 
 pub trait Internal {
     fn is_eligible(&self,account: AccountId) -> bool;
+
+    fn is_project_member(&self,project_id: ProjectId,account: AccountId) -> bool;
+
+    fn create_task_internal(&mut self,caller: AccountId, assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
+         points: u32, priority: u8) -> Result<(),DaoError>;
 }
 
 impl<T> ToyotaDao for T
@@ -124,7 +130,7 @@ where
         let project_id = self.data::<Data>().project_id.saturating_add(1);
 
         self.data::<Data>().project.insert(&project_id.clone(),
-            &Proposal {
+            &Project {
                 creator: caller.clone(),
                 description: description,
             });
@@ -144,7 +150,7 @@ where
 
         let project_members = self.data::<Data>().project_members.get(&project_id);
 
-        if let Some(mut members) = projects_members {
+        if let Some(mut members) = project_members {
             if members.contains(&caller) {
                 return Err(DaoError::MemberExistsInProject)
             }
@@ -194,6 +200,22 @@ where
         Ok(())
     }
 
+    default fn create_project_task(&mut self, project_id: ProjectId, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
+    points: u32, priority: u8) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if !self.data::<Data>().members.contains(&caller) {
+            return Err(DaoError::MemberDoesNotExist)
+        }
+
+        let now = Self::env().block_timestamp();
+
+        let duration = now + duration;
+
+
+        Ok(())
+    }
+
     default fn get_token_address(&self) -> AccountId {
         self.data::<Data>().token
     }
@@ -210,6 +232,51 @@ where
 {
     default fn is_eligible(&self,_account: AccountId) -> bool {
         return true;
+    }
+
+    default fn is_project_member(&self,project_id: ProjectId,account: AccountId) -> bool {
+
+        let project_members = self.data::<Data>().project_members.get(&project_id);
+
+        if let Some(mut members) = project_members {
+            if members.contains(&account) {
+                return true;
+            } else {
+                return false;
+            }
+            
+        } else {
+            return false;
+        }
+    }
+
+    default fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp, 
+    points: u32, priority: u8) -> Result<(),DaoError> {
+        let task_priority = match priority {
+            1 => TaskPriority::Low,
+            2 => TaskPriority::Moderate,
+            3 => TaskPriority::High,
+            _ => return Err(DaoError::WrongTaskPriority)
+        };
+
+        let task = Task {
+            assignee: assignee,
+            reviewer: reviewer,
+            owner: caller.clone(),
+            deadline: deadline,
+            points: points,
+            priority: task_priority,
+            status: TaskStatus::ToDo,
+        };
+
+        let task_id = self.data::<Data>().task_id.saturating_add(1);
+
+        self.data::<Data>().task.insert(&task_id.clone(),&task);
+
+
+        self.data::<Data>().task_id = task_id;
+
+        Ok(())
     }
 
 }

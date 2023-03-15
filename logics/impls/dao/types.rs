@@ -35,7 +35,8 @@ pub struct Data {
     pub project: Mapping<ProjectId,Project>,
     pub members: Vec<AccountId>,
     pub member_token: Mapping<AccountId,TokenId>,
-    pub project_tasks: Mapping<ProjectId,TaskId>,
+    pub member_points: Mapping<AccountId,u32>,
+    pub project_tasks: Mapping<ProjectId,Vec<TaskId>>,
     pub project_members: Mapping<ProjectId,Vec<AccountId>>,
     pub token: AccountId,
     pub quorum: u8,
@@ -54,6 +55,7 @@ impl Default for Data {
             project: Default::default(),
             members: Default::default(),
             member_token: Default::default(),
+            member_points: Default::default(),
             project_tasks: Default::default(),
             project_members: Default::default(),
             token: ZERO_ADDRESS.into(),
@@ -83,6 +85,10 @@ pub enum DaoError {
      WrongTaskPriority,
      /// Member Exists in Project
      MemberExistsInProject,
+     /// Task Does Not Exist
+     TaskDoesNotExist,
+     /// Ineligible Caller
+     IneligibleCaller,
 }
 
 #[derive(Encode, Decode, Debug)]

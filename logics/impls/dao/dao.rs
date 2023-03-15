@@ -2,12 +2,14 @@ use crate::{
     impls::dao::types::{
         Data,
         Proposal,
+        ProposalId,
         Project,
         DaoError,
         Vote,
         VoteStatus,
         Task,
         TaskStatus,
+        TaskId,
         TaskPriority,
         ProjectId,
     },
@@ -15,6 +17,7 @@ use crate::{
 };
 use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
+use ink::prelude::vec;
 //use ink::Blake2x256;
    
 use openbrush::{
@@ -40,8 +43,8 @@ pub trait Internal {
 
     fn is_project_member(&self,project_id: ProjectId,account: AccountId) -> bool;
 
-    fn create_task_internal(&mut self,caller: AccountId, assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
-         points: u32, priority: u8) -> Result<(),DaoError>;
+    fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
+         task_priority: TaskPriority, points: u32) -> TaskId;
 }
 
 impl<T> ToyotaDao for T
@@ -116,6 +119,17 @@ where
 
 
         self.data::<Data>().proposal_id = proposal_id;
+
+        Ok(())
+    }
+    
+    default fn vote(&mut self, proposal_id: ProposalId, vote: bool) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if !self.data::<Data>().members.contains(&caller) {
+            return Err(DaoError::MemberDoesNotExist)
+        }
+
 
         Ok(())
     }
@@ -210,8 +224,99 @@ where
 
         let now = Self::env().block_timestamp();
 
-        let duration = now + duration;
+        let deadline = now + duration;
 
+        let task_priority = match priority {
+            1 => TaskPriority::Low,
+            2 => TaskPriority::Moderate,
+            3 => TaskPriority::High,
+            _ => return Err(DaoError::WrongTaskPriority)
+        };
+
+        let task_id = self.create_task_internal(caller.clone(),assignee.clone(),reviewer.clone(),deadline,task_priority,points);
+
+        let project_tasks = self.data::<Data>().project_tasks.get(&project_id);
+
+        if let Some(mut tasks) = project_tasks {
+            tasks.push(task_id.clone());
+            self.data::<Data>().project_tasks.insert(&project_id, &tasks);
+        } else {
+            let tasks = vec![task_id.clone()];
+            self.data::<Data>().project_tasks.insert(&project_id, &tasks);
+        }
+
+
+        Ok(())
+    }
+
+    default fn start_task(&mut self, task_id: TaskId) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if self.data::<Data>().task.get(&task_id).is_none() {
+            return Err(DaoError::TaskDoesNotExist);
+        }
+
+        let mut task = self.data::<Data>().task.get(&task_id).unwrap();
+
+        if task.assignee != caller {
+            return Err(DaoError::IneligibleCaller)
+        }
+
+        task.status = TaskStatus::InProgress;
+
+        self.data::<Data>().task.insert(&task_id,&task);
+
+        Ok(())
+    }
+
+    default fn submit_task(&mut self, task_id: TaskId) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if self.data::<Data>().task.get(&task_id).is_none() {
+            return Err(DaoError::TaskDoesNotExist);
+        }
+
+        let mut task = self.data::<Data>().task.get(&task_id).unwrap();
+
+        if task.assignee != caller {
+            return Err(DaoError::IneligibleCaller)
+        }
+
+        task.status = TaskStatus::UnderReview;
+
+        self.data::<Data>().task.insert(&task_id,&task);
+
+        Ok(())
+    }
+
+    default fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if self.data::<Data>().task.get(&task_id).is_none() {
+            return Err(DaoError::TaskDoesNotExist);
+        }
+
+        let mut task = self.data::<Data>().task.get(&task_id).unwrap();
+
+        if task.reviewer != caller {
+            return Err(DaoError::IneligibleCaller)
+        }
+
+        task.status = TaskStatus::Done;
+
+        let assignee = task.assignee;
+
+        let member_points = self.data::<Data>().member_points.get(&assignee);
+
+        if let Some(mut points) = member_points {
+            points = points + awarded_points;
+            self.data::<Data>().member_points.insert(&assignee, &points);
+        } else {
+            let points = awarded_points;
+            self.data::<Data>().member_points.insert(&assignee, &points);
+        }
+
+        self.data::<Data>().task.insert(&task_id,&task);
 
         Ok(())
     }
@@ -250,15 +355,9 @@ where
         }
     }
 
-    default fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp, 
-    points: u32, priority: u8) -> Result<(),DaoError> {
-        let task_priority = match priority {
-            1 => TaskPriority::Low,
-            2 => TaskPriority::Moderate,
-            3 => TaskPriority::High,
-            _ => return Err(DaoError::WrongTaskPriority)
-        };
-
+    default fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
+         task_priority: TaskPriority, points: u32) -> TaskId {
+        
         let task = Task {
             assignee: assignee,
             reviewer: reviewer,
@@ -276,7 +375,7 @@ where
 
         self.data::<Data>().task_id = task_id;
 
-        Ok(())
+        task_id
     }
 
 }

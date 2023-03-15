@@ -3,6 +3,8 @@ use crate::impls::dao::types::{
     Proposal,
     Vote,
     ProjectId,
+    ProposalId,
+    TaskId,
 };
 use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
@@ -33,6 +35,9 @@ pub trait ToyotaDao {
     fn create_project(&mut self, description: String) -> Result<(),DaoError>;
 
     #[ink(message)]
+    fn vote(&mut self, proposal_id: ProposalId, vote: bool) -> Result<(),DaoError>;
+
+    #[ink(message)]
     fn join_project(&mut self, project_id: ProjectId ) -> Result<(),DaoError>;
 
     #[ink(message)]
@@ -41,6 +46,15 @@ pub trait ToyotaDao {
     #[ink(message)]
     fn create_project_task(&mut self, project_id: ProjectId, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
         points: u32, priority: u8) -> Result<(),DaoError>;
+
+    #[ink(message)]
+    fn start_task(&mut self, task_id: TaskId) -> Result<(),DaoError>;
+
+    #[ink(message)]
+    fn submit_task(&mut self, task_id: TaskId) -> Result<(),DaoError>;
+
+    #[ink(message)]
+    fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError>;
 
     #[ink(message)]
     fn get_token_address(&self) -> AccountId;

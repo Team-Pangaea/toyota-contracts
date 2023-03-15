@@ -8,6 +8,7 @@ use crate::{
         Task,
         TaskStatus,
         TaskPriority,
+        ProjectId,
     },
     traits::dao::ToyotaDao,
 };
@@ -109,6 +110,50 @@ where
 
 
         self.data::<Data>().proposal_id = proposal_id;
+
+        Ok(())
+    }
+
+    default fn create_project(&mut self, description: String) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if !self.data::<Data>().members.contains(&caller) {
+            return Err(DaoError::MemberDoesNotExist)
+        }
+
+        let project_id = self.data::<Data>().project_id.saturating_add(1);
+
+        self.data::<Data>().project.insert(&project_id.clone(),
+            &Proposal {
+                creator: caller.clone(),
+                description: description,
+            });
+
+
+        self.data::<Data>().project_id = project_id;
+
+        Ok(())
+    }
+
+    default fn join_project(&mut self, project_id: ProjectId ) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if !self.data::<Data>().members.contains(&caller) {
+            return Err(DaoError::MemberDoesNotExist)
+        }
+
+        let project_members = self.data::<Data>().project_members.get(&project_id);
+
+        if let Some(mut members) = projects_members {
+            if members.contains(&caller) {
+                return Err(DaoError::MemberExistsInProject)
+            }
+            members.push(caller.clone());
+            self.data::<Data>().project_members.insert(&project_id, &members);
+        } else {
+            let members = vec![caller.clone()];
+            self.data::<Data>().project_members.insert(&project_id, &members);
+        }
 
         Ok(())
     }

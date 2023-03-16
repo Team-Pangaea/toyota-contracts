@@ -393,6 +393,22 @@ where
         self.data::<Data>().quorum
     }
 
+    default fn get_number_of_members(&self) -> u32 {
+        self.data::<Data>().member_id
+    }
+
+    default fn get_number_of_projects(&self) -> u32 {
+        self.data::<Data>().project_id
+    }
+
+    default fn get_number_of_tasks(&self) -> u32 {
+        self.data::<Data>().task_id
+    }
+
+    default fn get_number_of_proposals(&self) -> u32 {
+        self.data::<Data>().proposal_id
+    }
+
 }
 
 impl<T> Internal for T

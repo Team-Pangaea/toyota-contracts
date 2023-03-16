@@ -64,4 +64,16 @@ pub trait ToyotaDao {
 
     #[ink(message)]
     fn get_quorum(&self) -> u32;
+
+    #[ink(message)]
+    fn get_number_of_members(&self) -> u32;
+
+    #[ink(message)]
+    fn get_number_of_projects(&self) -> u32;
+
+    #[ink(message)]
+    fn get_number_of_tasks(&self) -> u32;
+
+    #[ink(message)]
+    fn get_number_of_proposals(&self) -> u32;
 }

@@ -36,10 +36,11 @@ pub struct Data {
     pub members: Vec<AccountId>,
     pub member_token: Mapping<AccountId,TokenId>,
     pub member_points: Mapping<AccountId,u32>,
+    pub member_votes: Mapping<(AccountId,ProposalId),bool>,
     pub project_tasks: Mapping<ProjectId,Vec<TaskId>>,
     pub project_members: Mapping<ProjectId,Vec<AccountId>>,
     pub token: AccountId,
-    pub quorum: u8,
+    pub quorum: u32,
     pub proposal_id: u32,
     pub member_id: u32,
     pub project_id: u32,
@@ -56,6 +57,7 @@ impl Default for Data {
             members: Default::default(),
             member_token: Default::default(),
             member_points: Default::default(),
+            member_votes: Default::default(),
             project_tasks: Default::default(),
             project_members: Default::default(),
             token: ZERO_ADDRESS.into(),
@@ -89,6 +91,19 @@ pub enum DaoError {
      TaskDoesNotExist,
      /// Ineligible Caller
      IneligibleCaller,
+     /// Member has already Voted
+     MemberHasAlreadyVoted,
+     /// Voting Period Expired
+     VotingPeriodExpired,
+     /// Proposal Does Not Exist
+     ProposalDoesNotExist,
+     /// Vote Not Available
+     VoteNotAvailable,
+     /// Vote Ongoing
+     VoteOngoing,
+     /// Quorum Not Achieved
+     QuorumNotAchieved,
+
 }
 
 #[derive(Encode, Decode, Debug)]
@@ -118,7 +133,6 @@ impl Default for Project {
 pub struct Proposal {
     pub creator: AccountId,
     pub description: String,
-    pub vote: Vote,
 }
 
 impl Default for Proposal {
@@ -126,7 +140,6 @@ impl Default for Proposal {
         Self {
             creator: ZERO_ADDRESS.into(),
             description: Default::default(),
-            vote: Default::default(),
         }
     }
 }
@@ -164,7 +177,6 @@ pub enum VoteStatus {
     InProgress,
 	Passed,
 	Failed,
-	Expired,
 }
 
 #[derive(Encode, Decode, Debug)]

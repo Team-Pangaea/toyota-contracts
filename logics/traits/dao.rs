@@ -35,7 +35,10 @@ pub trait ToyotaDao {
     fn create_project(&mut self, description: String) -> Result<(),DaoError>;
 
     #[ink(message)]
-    fn vote(&mut self, proposal_id: ProposalId, vote: bool) -> Result<(),DaoError>;
+    fn vote(&mut self, proposal_id: ProposalId, vote_cast: bool) -> Result<(),DaoError>;
+
+    #[ink(message)]
+    fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError>;
 
     #[ink(message)]
     fn join_project(&mut self, project_id: ProjectId ) -> Result<(),DaoError>;
@@ -60,5 +63,5 @@ pub trait ToyotaDao {
     fn get_token_address(&self) -> AccountId;
 
     #[ink(message)]
-    fn get_quorum(&self) -> u8;
+    fn get_quorum(&self) -> u32;
 }

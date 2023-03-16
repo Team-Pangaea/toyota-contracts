@@ -114,22 +114,86 @@ where
             &Proposal {
                 creator: caller.clone(),
                 description: description,
-                vote: vote,
-            });
+        });
 
+        self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
 
         self.data::<Data>().proposal_id = proposal_id;
 
         Ok(())
     }
     
-    default fn vote(&mut self, proposal_id: ProposalId, vote: bool) -> Result<(),DaoError> {
+    default fn vote(&mut self, proposal_id: ProposalId, vote_cast: bool) -> Result<(),DaoError> {
         let caller = Self::env().caller();
 
         if !self.data::<Data>().members.contains(&caller) {
             return Err(DaoError::MemberDoesNotExist)
         }
 
+        if self.data::<Data>().vote.get(&proposal_id).is_none() {
+            return Err(DaoError::ProposalDoesNotExist);
+        }
+
+        let mut vote = self.data::<Data>().vote.get(&proposal_id).unwrap();
+
+        let pvote = self.data::<Data>().member_votes.get(&(caller.clone(),proposal_id)).is_some();
+
+        if pvote == true {
+            return Err(DaoError::MemberHasAlreadyVoted)
+        }
+
+        let now = Self::env().block_timestamp();
+
+        if now > vote.end {
+            return Err(DaoError::VotingPeriodExpired)
+        }
+
+        if vote_cast == true {
+            vote.yes_votes += 1;
+        } else {
+            vote.no_votes += 1;
+        }
+
+        self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
+
+        Ok(())
+    }
+
+    default fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError> {
+        let caller = Self::env().caller();
+
+        if !self.data::<Data>().members.contains(&caller) {
+            return Err(DaoError::MemberDoesNotExist)
+        }
+
+        if self.data::<Data>().vote.get(&proposal_id).is_none() {
+            return Err(DaoError::ProposalDoesNotExist);
+        }
+
+        let mut vote = self.data::<Data>().vote.get(&proposal_id).unwrap();
+
+        if vote.vote_status != VoteStatus::InProgress {
+            return Err(DaoError::VoteNotAvailable)
+        }
+
+        let now = Self::env().block_timestamp();
+
+        if now < vote.end {
+            return Err(DaoError::VoteOngoing)
+        }
+
+        if vote.yes_votes + vote.no_votes < self.data::<Data>().quorum {
+            vote.vote_status = VoteStatus::Failed;
+            self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
+        }
+
+        if vote.yes_votes > vote.no_votes {
+            vote.vote_status = VoteStatus::Passed;
+            self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
+        } else {
+            vote.vote_status = VoteStatus::Failed;
+            self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
+        }
 
         Ok(())
     }
@@ -325,7 +389,7 @@ where
         self.data::<Data>().token
     }
 
-    default fn get_quorum(&self) -> u8 {
+    default fn get_quorum(&self) -> u32 {
         self.data::<Data>().quorum
     }
 

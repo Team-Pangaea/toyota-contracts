@@ -66,6 +66,12 @@ pub trait ToyotaDao {
     fn get_quorum(&self) -> u32;
 
     #[ink(message)]
+    fn get_members(&self) -> Vec<AccountId>;
+
+    #[ink(message)]
+    fn get_project_members(&self,project_id: ProjectId) -> Vec<AccountId>;
+
+    #[ink(message)]
     fn get_number_of_members(&self) -> u32;
 
     #[ink(message)]
@@ -73,6 +79,15 @@ pub trait ToyotaDao {
 
     #[ink(message)]
     fn get_number_of_tasks(&self) -> u32;
+
+    #[ink(message)]
+    fn get_number_of_project_tasks(&self,project_id: ProjectId) -> u32;
+
+    #[ink(message)]
+    fn get_proposal_vote(&self,proposal_id: ProposalId) -> Vote;
+
+    #[ink(message)]
+    fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32);
 
     #[ink(message)]
     fn get_number_of_proposals(&self) -> u32;

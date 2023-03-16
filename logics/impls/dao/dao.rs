@@ -309,7 +309,6 @@ where
             self.data::<Data>().project_tasks.insert(&project_id, &tasks);
         }
 
-
         Ok(())
     }
 
@@ -397,12 +396,37 @@ where
         self.data::<Data>().member_id
     }
 
+    default fn get_members(&self) -> Vec<AccountId> {
+        self.data::<Data>().members.clone()
+    }
+
+    default fn get_project_members(&self,project_id: ProjectId) -> Vec<AccountId> {
+        self.data::<Data>().project_members.get(&project_id).unwrap()
+    }
+
+    default fn get_proposal_vote(&self,proposal_id: ProposalId) -> Vote {
+        self.data::<Data>().vote.get(&proposal_id).unwrap()
+    }
+
+    default fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32) {
+        let vote = self.data::<Data>().vote.get(&proposal_id).unwrap();
+        (vote.yes_votes,vote.no_votes)
+    }
+
     default fn get_number_of_projects(&self) -> u32 {
         self.data::<Data>().project_id
     }
 
     default fn get_number_of_tasks(&self) -> u32 {
         self.data::<Data>().task_id
+    }
+
+    default fn get_number_of_project_tasks(&self,project_id: ProjectId) -> u32 {
+        let vec1 = self.data::<Data>().project_tasks.get(&project_id);//.len().try_into().unwrap()
+        match vec1 {
+            Some(vec1) => return vec1.len().try_into().unwrap(),
+            None => return 0,
+        }
     }
 
     default fn get_number_of_proposals(&self) -> u32 {

@@ -118,6 +118,45 @@ fn get_task(&self, task_id: TaskId) -> Task
 
 #### MEMBERS
 
+(Temporary Admin function) : Add member
+```
+fn add_member(&mut self,address: AccountId) -> Result<(),DaoError>
+```
+
+Join DAO : Must have NFT Token
+```
+fn join_dao(&mut self) -> Result<(),DaoError>
+```
+
+Get NFT Token Address
+```
+fn get_token_address(&self) -> AccountId
+```
+
+Get Quorum (Set to zero for this demo)
+```
+fn get_quorum(&self) -> u32
+```
+
+Vector containing member addresses
+```
+fn get_members(&self) -> Vec<AccountId>
+```
+
+Get number of members
+```
+fn get_number_of_members(&self) -> u32
+```
+
+Get member points
+```
+fn get_member_points(&self, assignee: AccountId) -> u32
+```
+
+
+
+
+
 
 ### DAOMANAGER API
 

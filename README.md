@@ -64,6 +64,26 @@ Finalize Vote (proposal Id) - Any DAO member can finalzie vote when the time has
 fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError>;
 ```
 
+Get the Proposal Struct for a proposal id
+```
+fn get_proposal(&self,proposal_id: ProposalId) -> Proposal;
+```
+
+Get the Vote struct for a proposal id
+```
+fn get_proposal_vote(&self,proposal_id: ProposalId) -> Vote
+```
+
+Get Total Number of Proposals
+```
+fn get_number_of_proposals(&self) -> u32
+```
+
+Get Current Vote Count for a proposal id returns (yes votes, no votes)
+```
+fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32)
+```
+
 #### TASKS
 
 #### MEMBERS

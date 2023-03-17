@@ -19,6 +19,9 @@ use openbrush::{
     },
 };
 
+#[openbrush::wrapper]
+pub type ToyotaDaoRef = dyn ToyotaDao;
+
 #[openbrush::trait_definition]
 pub trait ToyotaDao {
 

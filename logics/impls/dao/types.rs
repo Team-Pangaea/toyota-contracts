@@ -1,15 +1,12 @@
-use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
 use openbrush::{
     contracts::{
         ownable::OwnableError,
-        psp34::Id,
         reentrancy_guard::ReentrancyGuardError,
     },
     storage::Mapping,
     traits::{
         AccountId,
-        Balance,
         String,
         Timestamp,
         ZERO_ADDRESS,

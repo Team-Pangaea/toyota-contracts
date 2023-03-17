@@ -15,7 +15,6 @@ use crate::{
     },
     traits::dao::ToyotaDao,
 };
-use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
 use ink::prelude::vec;
 //use ink::Blake2x256;
@@ -29,14 +28,11 @@ use openbrush::{
     modifiers,
     traits::{
         AccountId,
-        Balance,
         Storage,
         String,
         Timestamp,
-        BlockNumber,
     },
 };
-use ink::ToAccountId;
 
 pub trait Internal {
     fn is_eligible(&self,account: AccountId) -> bool;
@@ -439,8 +435,15 @@ impl<T> Internal for T
 where
     T: Storage<Data>,
 {
-    default fn is_eligible(&self,_account: AccountId) -> bool {
-        return true;
+    default fn is_eligible(&self,account: AccountId) -> bool {
+        let address = self.data::<Data>().token;
+        let balance = PSP34Ref::balance_of(&address, account.clone());
+
+        if balance > 0 {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     default fn is_project_member(&self,project_id: ProjectId,account: AccountId) -> bool {

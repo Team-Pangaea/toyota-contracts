@@ -1,11 +1,15 @@
 # toyota-contracts
 
-### API
+### DAO API
+
+#### PROJECTS
 
 Create a Project
 ```
 fn create_project(&mut self, description: String) -> Result<(),DaoError>;
 ```
+
+#### PROPOSALS
 
 Create a Proposal (description, duration in milliseconds)
 ```
@@ -21,3 +25,10 @@ Finalize Vote (proposal Id) - Any DAO member can finalzie vote when the time has
 ```
 fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError>;
 ```
+
+#### TASKS
+
+#### MEMBERS
+
+
+### DAOMANAGER API

@@ -59,7 +59,7 @@ Vote on the Proposal (proposal Id, true for yes/false for no vote)
 fn vote(&mut self, proposal_id: ProposalId, vote_cast: bool) -> Result<(),DaoError>;
 ```
 
-Finalize Vote (proposal Id) - Any DAO member can finalzie vote when the time has expired.
+Finalize Vote (proposal Id) - Any DAO member can finalize vote when the time has expired.
 ```
 fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError>;
 ```
@@ -85,6 +85,36 @@ fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32)
 ```
 
 #### TASKS
+
+Create a Task : duration is in milliseconds, priority takes only 3 values (1,2,3) corresponding to (low, moderate,high) priority respectively.
+```
+fn create_task(&mut self,assignee: AccountId, reviewer: AccountId, duration: Timestamp, points: u32, priority: u8) -> Result<(),DaoError>
+```
+
+Assignee starts a task, changes status to In Progress
+```
+fn start_task(&mut self, task_id: TaskId) -> Result<(),DaoError>
+```
+
+Assignee finishes a task and changes the status to UnderReview
+```
+fn submit_task(&mut self, task_id: TaskId) -> Result<(),DaoError>
+```
+
+Reviewer reviews the task and allocates points to the assignee
+```
+fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError>
+```
+
+Get total number of Tasks
+```
+fn get_number_of_tasks(&self) -> u32
+```
+
+Get the Task struct for a given Task Id
+```
+fn get_task(&self, task_id: TaskId) -> Task
+```
 
 #### MEMBERS
 

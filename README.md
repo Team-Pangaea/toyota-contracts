@@ -32,3 +32,33 @@ fn finalize_vote(&mut self, proposal_id: ProposalId) -> Result<(),DaoError>;
 
 
 ### DAOMANAGER API
+
+Get the total Number of DAOs
+```
+fn get_number_of_daos(&self) -> DaoId
+```
+
+Add a DAO ( Members only function)
+```
+fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError>
+```
+
+Register Account as a Member
+```
+fn register(&mut self, account: AccountId) -> Result<(),DaoManagerError>
+```
+
+Get NFT Token Address
+```
+fn get_token(&self) -> AccountId
+```
+
+Get vector containing the account Id of all the DAOs
+```
+fn get_daos(&self) -> Vec<AccountId>
+```
+
+Get vector containing the account addresses of all the registered members
+```
+fn get_members(&self) -> Vec<AccountId>
+```

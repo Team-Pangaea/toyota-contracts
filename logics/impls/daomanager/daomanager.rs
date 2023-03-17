@@ -3,6 +3,7 @@ use crate::{
         Data,
         DaoId,
         DaoManagerError,
+        MemberId,
     },
     traits::daomanager::DaoManager,
     traits::dao::ToyotaDaoRef,
@@ -62,6 +63,9 @@ where
             return Err(DaoManagerError::DAOExists)
         }
 
+        let dao_id = self.data::<Data>().dao_id.saturating_add(1);
+        self.data::<Data>().dao_id = dao_id;
+
         self.data::<Data>().daos.push(dao.clone());
 
         Ok(())
@@ -78,6 +82,9 @@ where
             return Err(DaoManagerError::AlreadyAMember)
         }
 
+        let member_id = self.data::<Data>().member_id.saturating_add(1);
+        self.data::<Data>().member_id = member_id;
+
         self.data::<Data>().members.push(account.clone());
 
 
@@ -86,6 +93,14 @@ where
 
     default fn get_token(&self) -> AccountId {
         self.data::<Data>().token
+    }
+
+    default fn get_daos(&self) -> Vec<AccountId> {
+        self.data::<Data>().daos.clone()
+    }
+
+    default fn get_members(&self) -> Vec<AccountId> {
+        self.data::<Data>().members.clone()
     }
 
 }

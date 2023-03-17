@@ -22,6 +22,7 @@ use scale::{
 
 pub const STORAGE_KEY: u32 = openbrush::storage_unique_key!(Data);
 pub type DaoId = u32;
+pub type MemberId = u32;
 
 #[derive(Debug)]
 #[openbrush::upgradeable_storage(STORAGE_KEY)]
@@ -30,6 +31,7 @@ pub struct Data {
     pub daos: Vec<AccountId>,
     pub members: Vec<AccountId>,
     pub dao_id: DaoId,
+    pub member_id: MemberId,
 }
 
 impl Default for Data {
@@ -39,6 +41,7 @@ impl Default for Data {
             daos: Default::default(),
             members: Default::default(),
             dao_id: 0,
+            member_id: 0,
         }
     }
 }

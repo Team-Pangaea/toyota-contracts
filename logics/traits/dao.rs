@@ -1,10 +1,12 @@
 use crate::impls::dao::types::{
     DaoError,
+    Project,
     Proposal,
     Vote,
     ProjectId,
     ProposalId,
     TaskId,
+    Task,
 };
 use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
@@ -82,6 +84,21 @@ pub trait ToyotaDao {
 
     #[ink(message)]
     fn get_number_of_tasks(&self) -> u32;
+
+    #[ink(message)]
+    fn get_task(&self, task_id: TaskId) -> Task;
+
+    #[ink(message)]
+    fn get_project_task_ids(&self,project_id: ProjectId) -> Vec<TaskId>;
+
+    #[ink(message)]
+    fn get_member_points(&self, assignee: AccountId) -> u32;
+
+    #[ink(message)]
+    fn get_project(&self,project_id: ProjectId) -> Project;
+
+    #[ink(message)]
+    fn get_proposal(&self,proposal_id: ProposalId) -> Proposal;
 
     #[ink(message)]
     fn get_number_of_project_tasks(&self,project_id: ProjectId) -> u32;

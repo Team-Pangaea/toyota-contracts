@@ -31,6 +31,7 @@ use openbrush::{
         Storage,
         String,
         Timestamp,
+        ZERO_ADDRESS,
     },
 };
 
@@ -397,14 +398,30 @@ where
     }
 
     default fn get_project_members(&self,project_id: ProjectId) -> Vec<AccountId> {
+        if project_id == 0 || project_id > self.data::<Data>().project_id {
+            return vec![]
+        }
         self.data::<Data>().project_members.get(&project_id).unwrap()
     }
 
     default fn get_proposal_vote(&self,proposal_id: ProposalId) -> Vote {
+        if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
+            let vote = Vote {
+                yes_votes: 0,
+                no_votes: 0,
+                start: 0,
+                end: 0,
+                vote_status: VoteStatus::NotAvailable,
+            };
+            return vote
+        }
         self.data::<Data>().vote.get(&proposal_id).unwrap()
     }
 
     default fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32) {
+        if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
+            return (0,0)
+        }
         let vote = self.data::<Data>().vote.get(&proposal_id).unwrap();
         (vote.yes_votes,vote.no_votes)
     }
@@ -415,6 +432,59 @@ where
 
     default fn get_number_of_tasks(&self) -> u32 {
         self.data::<Data>().task_id
+    }
+
+    default fn get_task(&self, task_id: TaskId) -> Task {
+        if task_id == 0 || task_id > self.data::<Data>().task_id {
+            let task = Task {
+                assignee: ZERO_ADDRESS.into(),
+                reviewer: ZERO_ADDRESS.into(),
+                owner: ZERO_ADDRESS.into(),
+                deadline: 0,
+                points: 0,
+                priority: TaskPriority::None,
+                status: TaskStatus::ToDo,
+            };
+        }
+        self.data::<Data>().task.get(&task_id).unwrap()
+
+    }
+
+    default fn get_project_task_ids(&self,project_id: ProjectId) -> Vec<TaskId> {
+        if project_id == 0 || project_id > self.data::<Data>().project_id {
+            return vec![]
+        }
+        self.data::<Data>().project_tasks.get(&project_id).unwrap()
+    }
+
+    default fn get_member_points(&self, assignee: AccountId) -> u32 {
+        let member_points = self.data::<Data>().member_points.get(&assignee);
+
+        if let Some(points) = member_points {
+            return points;
+        } else {
+            return 0;
+        }
+    }
+
+    default fn get_project(&self,project_id: ProjectId) -> Project {
+        if project_id == 0 || project_id > self.data::<Data>().project_id {
+            let project = Project {
+                creator: ZERO_ADDRESS.into(),
+                description: String::from(""),
+            };
+        }
+        self.data::<Data>().project.get(&project_id).unwrap()
+    }
+
+    default fn get_proposal(&self,proposal_id: ProposalId) -> Proposal {
+        if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
+            let proposal = Proposal {
+                creator: ZERO_ADDRESS.into(),
+                description: String::from(""),
+            };
+        }
+        self.data::<Data>().proposal.get(&proposal_id).unwrap()
     }
 
     default fn get_number_of_project_tasks(&self,project_id: ProjectId) -> u32 {

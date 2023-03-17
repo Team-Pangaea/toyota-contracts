@@ -35,4 +35,10 @@ pub trait DaoManager {
     #[ink(message)]
     fn get_token(&self) -> AccountId;
 
+    #[ink(message)]
+    fn get_daos(&self) -> Vec<AccountId>;
+
+    #[ink(message)]
+    fn get_members(&self) -> Vec<AccountId>;
+
 }

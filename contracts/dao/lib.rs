@@ -165,8 +165,10 @@ pub mod dao {
             let priority = 1; //1,2 or 3
 
             assert_eq!(dao.get_number_of_tasks(),0u32);
-            assert!(dao.create_task(accounts.alice,accounts.alice,duration,points,priority).is_ok());
+            assert!(dao.create_task(accounts.bob,accounts.alice,duration,points,priority).is_ok());
             assert_eq!(dao.get_number_of_tasks(),1u32);
+
+            assert_eq!(dao.get_member_points(accounts.bob),0u32);
         }
 
         #[ink::test]
@@ -191,7 +193,7 @@ pub mod dao {
 
             //Bob creates a task
             assert_eq!(dao.get_number_of_project_tasks(1),0u32);
-            assert!(dao.create_project_task(1,accounts.alice,accounts.alice,duration,points,priority).is_ok());
+            assert!(dao.create_project_task(1,accounts.charlie,accounts.alice,duration,points,priority).is_ok());
             assert_eq!(dao.get_number_of_project_tasks(1),1u32);
 
             // Bob creates a second task
@@ -200,7 +202,7 @@ pub mod dao {
             let points2 = 10;
             let priority2 = 2;
 
-            assert!(dao.create_project_task(1,accounts.alice,accounts.alice,duration2,points2,priority2).is_ok());
+            assert!(dao.create_project_task(1,accounts.charlie,accounts.alice,duration2,points2,priority2).is_ok());
             assert_eq!(dao.get_number_of_project_tasks(1),2u32);
 
         }

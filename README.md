@@ -181,7 +181,7 @@ fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError>
 
 Register Account as a Member
 ```
-fn register(&mut self, account: AccountId) -> Result<(),DaoManagerError>
+fn register(&mut self) -> Result<(),DaoManagerError>
 ```
 
 Get NFT Token Address
@@ -197,4 +197,9 @@ fn get_daos(&self) -> Vec<AccountId>
 Get vector containing the account addresses of all the registered members
 ```
 fn get_members(&self) -> Vec<AccountId>
+```
+
+Check membership
+```
+fn check_membership(&self,account: AccountId) -> bool
 ```

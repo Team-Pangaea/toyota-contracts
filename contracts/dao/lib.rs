@@ -3,10 +3,9 @@
 
 #[openbrush::contract]
 pub mod dao {
-    use ink::env::DefaultEnvironment;
     use ink::prelude::vec;
+    use ink::prelude::vec::Vec;
     use openbrush::contracts::ownable::*;
-    use openbrush::contracts::psp34::Id;
     use openbrush::contracts::reentrancy_guard::*;
     use openbrush::traits::Storage;
     
@@ -84,10 +83,8 @@ pub mod dao {
         use crate::dao::DaoContract;
         use ink::env::test;
         use openbrush::{
-            contracts::psp34::Id,
             traits::String,
         };
-        use toyota_pkg::impls::dao::types::DaoError;
 
         #[ink::test]
         fn new_works() {

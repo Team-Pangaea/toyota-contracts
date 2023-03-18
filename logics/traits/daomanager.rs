@@ -2,16 +2,10 @@ use crate::impls::daomanager::types::{
     DaoManagerError,
     DaoId,
 };
-use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
 use openbrush::{
-    contracts::psp34::Id,
     traits::{
         AccountId,
-        Balance,
-        String,
-        Timestamp,
-        BlockNumber,
     },
 };
 
@@ -30,7 +24,7 @@ pub trait DaoManager {
     fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError>;
 
     #[ink(message)]
-    fn register(&mut self, account: AccountId) -> Result<(),DaoManagerError>;
+    fn register(&mut self) -> Result<(),DaoManagerError>;
 
     #[ink(message)]
     fn get_token(&self) -> AccountId;
@@ -40,5 +34,8 @@ pub trait DaoManager {
 
     #[ink(message)]
     fn get_members(&self) -> Vec<AccountId>;
+
+    #[ink(message)]
+    fn check_membership(&self,account: AccountId) -> bool;
 
 }

@@ -8,16 +8,12 @@ use crate::impls::dao::types::{
     TaskId,
     Task,
 };
-use ink::primitives::Hash;
 use ink::prelude::vec::Vec;
 use openbrush::{
-    contracts::psp34::Id,
     traits::{
         AccountId,
-        Balance,
         String,
         Timestamp,
-        BlockNumber,
     },
 };
 

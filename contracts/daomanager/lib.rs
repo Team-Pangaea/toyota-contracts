@@ -3,10 +3,7 @@
 
 #[openbrush::contract]
 pub mod daomanager {
-    use ink::env::DefaultEnvironment;
-    use ink::prelude::vec;
     use openbrush::contracts::ownable::*;
-    use openbrush::contracts::psp34::Id;
     use openbrush::contracts::reentrancy_guard::*;
     use openbrush::traits::Storage;
     
@@ -46,11 +43,6 @@ pub mod daomanager {
         use super::*;
         use crate::daomanager::DaoManagerContract;
         use ink::env::test;
-        use openbrush::{
-            contracts::psp34::Id,
-            traits::String,
-        };
-        use toyota_pkg::impls::daomanager::types::DaoManagerError;
 
         #[ink::test]
         fn new_works() {

@@ -584,7 +584,7 @@ where
 
         let project_members = self.data::<Data>().project_members.get(&project_id);
 
-        if let Some(mut members) = project_members {
+        if let Some(members) = project_members {
             if members.contains(&account) {
                 return true;
             } else {

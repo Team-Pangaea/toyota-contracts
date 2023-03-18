@@ -3,14 +3,11 @@ use crate::{
         Data,
         DaoId,
         DaoManagerError,
-        MemberId,
     },
     traits::daomanager::DaoManager,
     traits::dao::ToyotaDaoRef,
 };
 use ink::prelude::vec::Vec;
-use ink::prelude::vec;
-//use ink::Blake2x256;
    
 use openbrush::{
     contracts::{
@@ -55,6 +52,10 @@ where
 
         let token = ToyotaDaoRef::get_token_address(&dao);
 
+        if !self.is_member(caller.clone()) {
+            return Err(DaoManagerError::NotAMember)
+        }
+
         if !self.check_token(token.clone()) {
             return Err(DaoManagerError::WrongToken)
         }
@@ -71,7 +72,7 @@ where
         Ok(())
     }
 
-    default fn register(&mut self, account: AccountId) -> Result<(),DaoManagerError> {
+    default fn register(&mut self) -> Result<(),DaoManagerError> {
         let caller = Self::env().caller();
 
         if !self.check_eligible(caller.clone()) {
@@ -85,7 +86,7 @@ where
         let member_id = self.data::<Data>().member_id.saturating_add(1);
         self.data::<Data>().member_id = member_id;
 
-        self.data::<Data>().members.push(account.clone());
+        self.data::<Data>().members.push(caller.clone());
 
 
         Ok(())
@@ -101,6 +102,10 @@ where
 
     default fn get_members(&self) -> Vec<AccountId> {
         self.data::<Data>().members.clone()
+    }
+
+    default fn check_membership(&self,account: AccountId) -> bool {
+        self.is_member(account.clone())
     }
 
 }

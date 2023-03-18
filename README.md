@@ -103,7 +103,7 @@ fn submit_task(&mut self, task_id: TaskId) -> Result<(),DaoError>
 
 Reviewer reviews the task and allocates points to the assignee
 ```
-fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError>
+fn review_task(&mut self, task_id: TaskId, review: String, awarded_points: u32) -> Result<(),DaoError>
 ```
 
 Get total number of Tasks
@@ -153,6 +153,15 @@ Get member points
 fn get_member_points(&self, assignee: AccountId) -> u32
 ```
 
+Get member Task Ids vector
+```
+fn get_member_task_ids(&self, assignee:AccountId) -> Vec<TaskId>
+```
+
+Get Member Proposal Ids vector
+```
+fn get_member_proposal_ids(&self, assignee:AccountId) -> Vec<ProposalId>
+```
 
 
 

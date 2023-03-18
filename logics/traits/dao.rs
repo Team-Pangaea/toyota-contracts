@@ -62,7 +62,7 @@ pub trait ToyotaDao {
     fn submit_task(&mut self, task_id: TaskId) -> Result<(),DaoError>;
 
     #[ink(message)]
-    fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError>;
+    fn review_task(&mut self, task_id: TaskId, review: String, awarded_points: u32) -> Result<(),DaoError>;
 
     #[ink(message)]
     fn get_token_address(&self) -> AccountId;
@@ -93,6 +93,12 @@ pub trait ToyotaDao {
 
     #[ink(message)]
     fn get_member_points(&self, assignee: AccountId) -> u32;
+
+    #[ink(message)]
+    fn get_member_task_ids(&self, assignee:AccountId) -> Vec<TaskId>;
+
+    #[ink(message)]
+    fn get_member_proposal_ids(&self, assignee:AccountId) -> Vec<ProposalId>;
 
     #[ink(message)]
     fn get_project(&self,project_id: ProjectId) -> Project;

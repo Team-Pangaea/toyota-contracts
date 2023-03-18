@@ -61,12 +61,12 @@ pub mod dao {
 
     impl DaoContract {
         #[ink(constructor)]
-        pub fn new(token: AccountId) -> Self {
+        pub fn new(token: AccountId, metadata: Vec<u8>) -> Self {
             
                 let mut instance = Self::default();
                 instance.dao.token = token;
                 instance.dao.quorum = 0; // 0%
-
+                instance.dao.metadata = metadata;
                 let caller = instance.env().caller();
                 instance._init_with_owner(caller.clone());
                 instance.dao.members = vec![caller];
@@ -187,14 +187,22 @@ pub mod dao {
             // Bob joins the project
             assert!(dao.join_project(1).is_ok());
 
+            // Alice and Charlie join the project
+            set_sender(accounts.alice);
+            assert!(dao.join_project(1).is_ok());
+            set_sender(accounts.charlie);
+            assert!(dao.join_project(1).is_ok());
+
             let duration = 1000000;
             let points = 100;
             let priority = 1; //1,2 or 3
 
             //Bob creates a task
+            set_sender(accounts.bob);
             assert_eq!(dao.get_number_of_project_tasks(1),0u32);
             assert!(dao.create_project_task(1,accounts.charlie,accounts.alice,duration,points,priority).is_ok());
             assert_eq!(dao.get_number_of_project_tasks(1),1u32);
+            assert_eq!(dao.get_member_task_ids(accounts.charlie),vec![1]);
 
             // Bob creates a second task
 
@@ -204,6 +212,7 @@ pub mod dao {
 
             assert!(dao.create_project_task(1,accounts.charlie,accounts.alice,duration2,points2,priority2).is_ok());
             assert_eq!(dao.get_number_of_project_tasks(1),2u32);
+            assert_eq!(dao.get_member_task_ids(accounts.charlie),vec![1,2]);
 
         }
 
@@ -243,7 +252,8 @@ pub mod dao {
         }
 
         fn init_contract() -> DaoContract {
-            DaoContract::new(token_address())
+            let metadata = String::from("Test");
+            DaoContract::new(token_address(),metadata)
         }
 
         fn token_address() -> AccountId {

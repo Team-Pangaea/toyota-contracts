@@ -26,6 +26,7 @@ pub type TaskId = u32;
 #[derive(Debug)]
 #[openbrush::upgradeable_storage(STORAGE_KEY)]
 pub struct Data {
+    pub metadata: Vec<u8>,
     pub proposal: Mapping<ProposalId,Proposal>,
     pub vote: Mapping<ProposalId,Vote>,
     pub task: Mapping<TaskId,Task>,
@@ -34,6 +35,8 @@ pub struct Data {
     pub member_token: Mapping<AccountId,TokenId>,
     pub member_points: Mapping<AccountId,u32>,
     pub member_votes: Mapping<(AccountId,ProposalId),bool>,
+    pub member_tasks: Mapping<AccountId,Vec<TaskId>>,
+    pub member_proposals: Mapping<AccountId,Vec<ProposalId>>,
     pub project_tasks: Mapping<ProjectId,Vec<TaskId>>,
     pub project_members: Mapping<ProjectId,Vec<AccountId>>,
     pub token: AccountId,
@@ -47,6 +50,7 @@ pub struct Data {
 impl Default for Data {
     fn default() -> Self {
         Self {
+            metadata: Default::default(),
             proposal: Default::default(),
             vote: Default::default(),
             task: Default::default(),
@@ -55,6 +59,8 @@ impl Default for Data {
             member_token: Default::default(),
             member_points: Default::default(),
             member_votes: Default::default(),
+            member_proposals: Default::default(),
+            member_tasks: Default::default(),
             project_tasks: Default::default(),
             project_members: Default::default(),
             token: ZERO_ADDRESS.into(),
@@ -100,6 +106,8 @@ pub enum DaoError {
      VoteOngoing,
      /// Quorum Not Achieved
      QuorumNotAchieved,
+     /// Not A Project Member
+     NotAProjectMember,
 
 }
 
@@ -189,6 +197,7 @@ pub struct Task {
     pub points: u32,
     pub priority: TaskPriority,
     pub status: TaskStatus,
+    pub review: String,
 }
 
 impl Default for Task {
@@ -201,6 +210,7 @@ impl Default for Task {
             points: 0,
             priority: TaskPriority::None,
             status: TaskStatus::ToDo,
+            review: Default::default(),
         }
     }
 }

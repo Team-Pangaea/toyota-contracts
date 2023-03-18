@@ -113,6 +113,16 @@ where
                 description: description,
         });
 
+        let member_proposals = self.data::<Data>().member_proposals.get(&caller);
+
+        if let Some(mut proposals) = member_proposals {
+            proposals.push(proposal_id.clone());
+            self.data::<Data>().member_proposals.insert(&caller, &proposals);
+        } else {
+            let proposals = vec![proposal_id.clone()];
+            self.data::<Data>().member_proposals.insert(&caller, &proposals);
+        }
+
         self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
 
         self.data::<Data>().proposal_id = proposal_id;
@@ -256,16 +266,27 @@ where
         };
 
         let task = Task {
-            assignee: assignee,
+            assignee: assignee.clone(),
             reviewer: reviewer,
             owner: caller.clone(),
             deadline: now + duration,
             points: points,
             priority: task_priority,
             status: TaskStatus::ToDo,
+            review: String::from(""),
         };
 
         let task_id = self.data::<Data>().task_id.saturating_add(1);
+
+        let member_tasks = self.data::<Data>().member_tasks.get(&assignee);
+
+        if let Some(mut tasks) = member_tasks {
+            tasks.push(task_id.clone());
+            self.data::<Data>().member_tasks.insert(&assignee, &tasks);
+        } else {
+            let tasks = vec![task_id.clone()];
+            self.data::<Data>().member_tasks.insert(&assignee, &tasks);
+        }
 
         self.data::<Data>().task.insert(&task_id.clone(),&task);
 
@@ -279,8 +300,16 @@ where
     points: u32, priority: u8) -> Result<(),DaoError> {
         let caller = Self::env().caller();
 
-        if !self.data::<Data>().members.contains(&caller) {
-            return Err(DaoError::MemberDoesNotExist)
+        if !self.is_project_member(project_id.clone(),caller.clone()) {
+            return Err(DaoError::NotAProjectMember)
+        }
+
+        if !self.is_project_member(project_id.clone(),assignee.clone()) {
+            return Err(DaoError::NotAProjectMember)
+        }
+
+        if !self.is_project_member(project_id.clone(),reviewer.clone()) {
+            return Err(DaoError::NotAProjectMember)
         }
 
         let now = Self::env().block_timestamp();
@@ -304,6 +333,16 @@ where
         } else {
             let tasks = vec![task_id.clone()];
             self.data::<Data>().project_tasks.insert(&project_id, &tasks);
+        }
+
+        let member_tasks = self.data::<Data>().member_tasks.get(&assignee);
+
+        if let Some(mut mtasks) = member_tasks {
+            mtasks.push(task_id.clone());
+            self.data::<Data>().member_tasks.insert(&assignee, &mtasks);
+        } else {
+            let mtasks = vec![task_id.clone()];
+            self.data::<Data>().member_tasks.insert(&assignee, &mtasks);
         }
 
         Ok(())
@@ -349,7 +388,7 @@ where
         Ok(())
     }
 
-    default fn review_task(&mut self, task_id: TaskId, awarded_points: u32) -> Result<(),DaoError> {
+    default fn review_task(&mut self, task_id: TaskId, review: String, awarded_points: u32) -> Result<(),DaoError> {
         let caller = Self::env().caller();
 
         if self.data::<Data>().task.get(&task_id).is_none() {
@@ -363,6 +402,7 @@ where
         }
 
         task.status = TaskStatus::Done;
+        task.review = review;
 
         let assignee = task.assignee;
 
@@ -413,7 +453,7 @@ where
                 end: 0,
                 vote_status: VoteStatus::NotAvailable,
             };
-            return vote
+            return vote;
         }
         self.data::<Data>().vote.get(&proposal_id).unwrap()
     }
@@ -444,7 +484,9 @@ where
                 points: 0,
                 priority: TaskPriority::None,
                 status: TaskStatus::ToDo,
+                review: String::from(""),
             };
+            return task;
         }
         self.data::<Data>().task.get(&task_id).unwrap()
 
@@ -452,7 +494,7 @@ where
 
     default fn get_project_task_ids(&self,project_id: ProjectId) -> Vec<TaskId> {
         if project_id == 0 || project_id > self.data::<Data>().project_id {
-            return vec![]
+            return vec![];
         }
         self.data::<Data>().project_tasks.get(&project_id).unwrap()
     }
@@ -467,12 +509,33 @@ where
         }
     }
 
+    default fn get_member_task_ids(&self, assignee:AccountId) -> Vec<TaskId> {
+        let member_tasks = self.data::<Data>().member_tasks.get(&assignee);
+
+        if let Some(task_ids) = member_tasks {
+            return task_ids;
+        } else {
+            return vec![];
+        }
+    }
+
+    default fn get_member_proposal_ids(&self, assignee:AccountId) -> Vec<ProposalId> {
+        let member_proposals = self.data::<Data>().member_proposals.get(&assignee);
+
+        if let Some(proposal_ids) = member_proposals {
+            return proposal_ids;
+        } else {
+            return vec![];
+        }
+    }
+
     default fn get_project(&self,project_id: ProjectId) -> Project {
         if project_id == 0 || project_id > self.data::<Data>().project_id {
             let project = Project {
                 creator: ZERO_ADDRESS.into(),
                 description: String::from(""),
             };
+            return project;
         }
         self.data::<Data>().project.get(&project_id).unwrap()
     }
@@ -483,6 +546,7 @@ where
                 creator: ZERO_ADDRESS.into(),
                 description: String::from(""),
             };
+            return proposal;
         }
         self.data::<Data>().proposal.get(&proposal_id).unwrap()
     }
@@ -543,6 +607,7 @@ where
             points: points,
             priority: task_priority,
             status: TaskStatus::ToDo,
+            review: String::from(""),
         };
 
         let task_id = self.data::<Data>().task_id.saturating_add(1);

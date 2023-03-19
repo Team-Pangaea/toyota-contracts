@@ -1,5 +1,31 @@
 # toyota-contracts
 
+There are two contracts
+
+1. DAO Contract : It is the contract where all the DAO action happens.
+
+2. DaoManager Contract : It is used to manage the DAOs and membership od the organization.
+
+There is also a NFT Token contract that is used to manage membership. All the contracts are instantiated with this token contract address and to be a member one must have one of these NFT tokens. The assumption is that the Organization/Company will distribute it to its current/future employees and contributors. The token contracts are here -> https://github.com/Team-Pangaea/custom_mint . The front-end of this app is designed to detect the presence of this token and for this demo , the user will be prompted to mint one. If you want to directly mint the token, it should be minted as following
+
+```
+mint(&mut self, to: AccountId, token_uri: String, daomanagerContract: AccountId) -> Result<(), PSP34Error>;
+```
+
+
+The two contracts in this repo can be build with
+
+```
+cargo +nightly contract build
+```
+
+Unit Tests can be run with
+
+```
+cargo +nightly test
+```
+
+
 ### DAO API
 
 #### PROJECTS

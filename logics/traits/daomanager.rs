@@ -3,6 +3,7 @@ use crate::impls::daomanager::types::{
     DaoId,
 };
 use ink::prelude::vec::Vec;
+use ink::primitives::Hash;
 use openbrush::{
     traits::{
         AccountId,

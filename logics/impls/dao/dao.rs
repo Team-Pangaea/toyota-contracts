@@ -44,6 +44,13 @@ pub trait Internal {
          task_priority: TaskPriority, points: u32) -> TaskId;
 }
 
+pub trait DaoEvents {
+    fn emit_member_added_event(&self, member:AccountId, member_id: u32);
+    fn emit_project_created_event(&self, creator:AccountId, project_id: u32);
+    fn emit_proposal_created_event(&self, creator:AccountId, proposal_id: u32);
+    fn emit_task_created_event(&self, creator:AccountId, task_id: u32);
+}
+
 impl<T> ToyotaDao for T
 where
     T: Storage<Data> + Storage<ownable::Data> + Storage<reentrancy_guard::Data>,
@@ -65,6 +72,8 @@ where
         self.data::<Data>().members.push(address.clone());
         self.data::<Data>().member_token.insert(&address,&member_id);
 
+        self.emit_member_added_event(address,member_id);
+
         Ok(())
     }
 
@@ -83,6 +92,8 @@ where
 
         self.data::<Data>().members.push(address.clone());
         self.data::<Data>().member_token.insert(&address,&member_id);
+
+        self.emit_member_added_event(address,member_id);
 
         Ok(())
 
@@ -126,6 +137,8 @@ where
         self.data::<Data>().vote.insert(&proposal_id.clone(),&vote);
 
         self.data::<Data>().proposal_id = proposal_id;
+
+        self.emit_proposal_created_event(caller,proposal_id);
 
         Ok(())
     }
@@ -223,6 +236,8 @@ where
 
         self.data::<Data>().project_id = project_id;
 
+        self.emit_project_created_event(caller,project_id);
+
         Ok(())
     }
 
@@ -293,6 +308,8 @@ where
 
         self.data::<Data>().task_id = task_id;
 
+        self.emit_task_created_event(caller,task_id);
+
         Ok(())
     }
 
@@ -344,6 +361,8 @@ where
             let mtasks = vec![task_id.clone()];
             self.data::<Data>().member_tasks.insert(&assignee, &mtasks);
         }
+
+        self.emit_task_created_event(caller,task_id);
 
         Ok(())
     }
@@ -563,6 +582,39 @@ where
         self.data::<Data>().proposal_id
     }
 
+}
+
+impl<T> DaoEvents for T
+where
+    T: Storage<Data>,
+{
+    default fn emit_member_added_event(
+        &self,
+        _member: AccountId,
+        _member_id: u32,
+    ) {
+    }
+
+    default fn emit_project_created_event(
+        &self,
+        _member: AccountId,
+        _project_id: u32,
+    ) {
+    }
+
+    default fn emit_proposal_created_event(
+        &self,
+        _member: AccountId,
+        _proposal_id: u32,
+    ) {
+    }
+
+    default fn emit_task_created_event(
+        &self,
+        _member: AccountId,
+        _task_id: u32,
+    ) {
+    }
 }
 
 impl<T> Internal for T

@@ -8,7 +8,6 @@ use crate::{
     traits::dao::ToyotaDaoRef,
 };
 use ink::prelude::vec::Vec;
-   
 use openbrush::{
     contracts::{
         ownable::*,
@@ -19,6 +18,7 @@ use openbrush::{
     traits::{
         AccountId,
         Storage,
+        String,
     },
 };
 
@@ -48,6 +48,7 @@ where
     }
 
     default fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError> {
+        //0xbf76bd9d835d3f7d102df31935cb5a975c6fb1bf366fc55b60b152dcdac863c3
         let caller = Self::env().caller();
 
         let token = ToyotaDaoRef::get_token_address(&dao);

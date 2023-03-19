@@ -8,11 +8,20 @@ pub mod dao {
     use openbrush::contracts::ownable::*;
     use openbrush::contracts::reentrancy_guard::*;
     use openbrush::traits::Storage;
+    use ink::{
+        codegen::{
+            EmitEvent,
+            Env,
+        },
+        env::DefaultEnvironment,
+        EnvAccess,
+    };
     
     use toyota_pkg::{
         impls::dao::*,
         traits::dao::*,
     };
+    use toyota_pkg::impls::dao::dao::DaoEvents;
 
 
     #[ink(storage)]
@@ -73,6 +82,56 @@ pub mod dao {
                 instance
         }
         
+    }
+
+    impl DaoEvents for DaoContract {
+        fn emit_member_added_event(&self, member:AccountId, member_id: u32) {
+            <EnvAccess<'_, DefaultEnvironment> as EmitEvent<DaoContract>>::emit_event::<
+            MemberAdded,
+        >(
+            self.env(),
+            MemberAdded {
+                member,
+                member_id,
+            },
+        );
+        }
+
+        fn emit_project_created_event(&self, creator:AccountId, project_id: u32) {
+            <EnvAccess<'_, DefaultEnvironment> as EmitEvent<DaoContract>>::emit_event::<
+            ProjectCreated,
+        >(
+            self.env(),
+            ProjectCreated {
+                creator,
+                project_id,
+            },
+        );
+        }
+
+        fn emit_proposal_created_event(&self, creator:AccountId, proposal_id: u32) {
+            <EnvAccess<'_, DefaultEnvironment> as EmitEvent<DaoContract>>::emit_event::<
+            ProposalCreated,
+        >(
+            self.env(),
+            ProposalCreated {
+                creator,
+                proposal_id,
+            },
+        );
+        }
+
+        fn emit_task_created_event(&self, creator:AccountId, task_id: u32) {
+            <EnvAccess<'_, DefaultEnvironment> as EmitEvent<DaoContract>>::emit_event::<
+            TaskCreated,
+        >(
+            self.env(),
+            TaskCreated {
+                creator,
+                task_id,
+            },
+        );
+        }
     }
 
     impl ToyotaDao for DaoContract {}

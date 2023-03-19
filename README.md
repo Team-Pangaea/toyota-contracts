@@ -174,11 +174,6 @@ Get the total Number of DAOs
 fn get_number_of_daos(&self) -> DaoId
 ```
 
-Add a DAO ( Members only function)
-```
-fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError>
-```
-
 Register Account as a Member
 ```
 fn register(&mut self) -> Result<(),DaoManagerError>

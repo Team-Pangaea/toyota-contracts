@@ -25,6 +25,22 @@ Unit Tests can be run with
 cargo +nightly test
 ```
 
+#### Contract Addresses (Shibuya Testnet)
+
+```
+DaoManager : ZdMvVgENtf5VhWF62eGV9nFjmScx3zZTteDjzGN74hyAUQR
+Dao : WhRgUct8GRyMezkCSAjQj4Y6tJ5apVuHewNNtfvPFS8uymq (one of many)
+NFT Token (Customized PSP34) : Xc5P6n26FkToLvLzJJQJcewa3doT2RctHMkGsoXCo2hCJbx
+```
+
+
+### Overview
+
+Both DaoManager and Dao contracts are instantiated with NFT token (address Xc5P6n26FkToLvLzJJQJcewa3doT2RctHMkGsoXCo2hCJbx Shibuya Testnet)
+
+1. DaoManager Contract : Any Token holder ( In this example anyone who has minted a token from the given NFT contract address ) can register for membership here. Members can add DAOs and join any DAO.
+2. DAO contracts: Each DAO contract corresponds to a separate DAO. Members can create their own DAOs with its own contract as long as it uses the same token address as the daomanager. Members can join force, create projects, proposals, vote on proposals, create and accomplish tasks.
+
 
 ### DAO API
 
@@ -198,6 +214,11 @@ fn get_member_proposal_ids(&self, assignee:AccountId) -> Vec<ProposalId>
 Get the total Number of DAOs
 ```
 fn get_number_of_daos(&self) -> DaoId
+```
+
+Add DAO
+```
+fn add_dao(&mut self, dao: AccountId) -> Result<(),DaoManagerError>;
 ```
 
 Register Account as a Member

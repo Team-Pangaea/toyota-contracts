@@ -190,6 +190,7 @@ pub enum VoteStatus {
     derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
 )]
 pub struct Task {
+    pub description: String,
     pub assignee: AccountId,
     pub reviewer: AccountId,
     pub owner: AccountId,
@@ -203,6 +204,7 @@ pub struct Task {
 impl Default for Task {
     fn default() -> Self {
         Self {
+            description: Default::default(),
             assignee: ZERO_ADDRESS.into(),
             reviewer: ZERO_ADDRESS.into(),
             owner: ZERO_ADDRESS.into(),

@@ -45,10 +45,10 @@ pub trait ToyotaDao {
     fn join_project(&mut self, project_id: ProjectId ) -> Result<(),DaoError>;
 
     #[ink(message)]
-    fn create_task(&mut self,assignee: AccountId, reviewer: AccountId, duration: Timestamp, points: u32, priority: u8) -> Result<(),DaoError>;
+    fn create_task(&mut self,description: String,assignee: AccountId, reviewer: AccountId, duration: Timestamp, points: u32, priority: u8) -> Result<(),DaoError>;
 
     #[ink(message)]
-    fn create_project_task(&mut self, project_id: ProjectId, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
+    fn create_project_task(&mut self, project_id: ProjectId,description: String, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
         points: u32, priority: u8) -> Result<(),DaoError>;
 
     #[ink(message)]

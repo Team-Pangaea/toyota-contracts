@@ -40,7 +40,7 @@ pub trait Internal {
 
     fn is_project_member(&self,project_id: ProjectId,account: AccountId) -> bool;
 
-    fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
+    fn create_task_internal(&mut self,description: String, caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
          task_priority: TaskPriority, points: u32) -> TaskId;
 }
 
@@ -264,7 +264,7 @@ where
         Ok(())
     }
 
-    default fn create_task(&mut self,assignee: AccountId, reviewer: AccountId, duration: Timestamp, points: u32, priority: u8) -> Result<(),DaoError> {
+    default fn create_task(&mut self,description: String,assignee: AccountId, reviewer: AccountId, duration: Timestamp, points: u32, priority: u8) -> Result<(),DaoError> {
         let caller = Self::env().caller();
 
         if !self.data::<Data>().members.contains(&caller) {
@@ -281,6 +281,7 @@ where
         };
 
         let task = Task {
+            description: description,
             assignee: assignee.clone(),
             reviewer: reviewer,
             owner: caller.clone(),
@@ -313,7 +314,7 @@ where
         Ok(())
     }
 
-    default fn create_project_task(&mut self, project_id: ProjectId, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
+    default fn create_project_task(&mut self, project_id: ProjectId, description: String, assignee: AccountId, reviewer: AccountId, duration: Timestamp,
     points: u32, priority: u8) -> Result<(),DaoError> {
         let caller = Self::env().caller();
 
@@ -340,7 +341,7 @@ where
             _ => return Err(DaoError::WrongTaskPriority)
         };
 
-        let task_id = self.create_task_internal(caller.clone(),assignee.clone(),reviewer.clone(),deadline,task_priority,points);
+        let task_id = self.create_task_internal(description,caller.clone(),assignee.clone(),reviewer.clone(),deadline,task_priority,points);
 
         let project_tasks = self.data::<Data>().project_tasks.get(&project_id);
 
@@ -457,32 +458,52 @@ where
     }
 
     default fn get_project_members(&self,project_id: ProjectId) -> Vec<AccountId> {
+        let vec1 = vec![];
         if project_id == 0 || project_id > self.data::<Data>().project_id {
-            return vec![]
+            return vec1
         }
-        self.data::<Data>().project_members.get(&project_id).unwrap()
+        let proj = self.data::<Data>().project_members.get(&project_id);
+
+        if let Some(project) = proj {
+            return project;
+        } else {
+            return vec1;
+        }
+
     }
 
     default fn get_proposal_vote(&self,proposal_id: ProposalId) -> Vote {
+        let vote = Vote {
+            yes_votes: 0,
+            no_votes: 0,
+            start: 0,
+            end: 0,
+            vote_status: VoteStatus::NotAvailable,
+        };
         if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
-            let vote = Vote {
-                yes_votes: 0,
-                no_votes: 0,
-                start: 0,
-                end: 0,
-                vote_status: VoteStatus::NotAvailable,
-            };
             return vote;
         }
-        self.data::<Data>().vote.get(&proposal_id).unwrap()
+        let vote2 = self.data::<Data>().vote.get(&proposal_id);
+
+        if let Some(vec) = vote2 {
+            return vec;
+        } else {
+            return vote;
+        }
     }
 
     default fn get_current_vote_count(&self,proposal_id: ProposalId) -> (u32,u32) {
+        let vcount = (0,0);
         if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
-            return (0,0)
+            return vcount;
         }
-        let vote = self.data::<Data>().vote.get(&proposal_id).unwrap();
-        (vote.yes_votes,vote.no_votes)
+        let vote1 = self.data::<Data>().vote.get(&proposal_id);
+        if let Some(vote) = vote1 {
+            (vote.yes_votes,vote.no_votes)
+        } else {
+            vcount
+        }
+        
     }
 
     default fn get_number_of_projects(&self) -> u32 {
@@ -494,28 +515,42 @@ where
     }
 
     default fn get_task(&self, task_id: TaskId) -> Task {
+        let task = Task {
+            description: String::from(""),
+            assignee: ZERO_ADDRESS.into(),
+            reviewer: ZERO_ADDRESS.into(),
+            owner: ZERO_ADDRESS.into(),
+            deadline: 0,
+            points: 0,
+            priority: TaskPriority::None,
+            status: TaskStatus::ToDo,
+            review: String::from(""),
+        };
         if task_id == 0 || task_id > self.data::<Data>().task_id {
-            let task = Task {
-                assignee: ZERO_ADDRESS.into(),
-                reviewer: ZERO_ADDRESS.into(),
-                owner: ZERO_ADDRESS.into(),
-                deadline: 0,
-                points: 0,
-                priority: TaskPriority::None,
-                status: TaskStatus::ToDo,
-                review: String::from(""),
-            };
             return task;
         }
-        self.data::<Data>().task.get(&task_id).unwrap()
+
+        let task1 = self.data::<Data>().task.get(&task_id);
+        if let Some(task2) = task1 {
+            return task2;
+        } else {
+            return task;
+        }
 
     }
 
     default fn get_project_task_ids(&self,project_id: ProjectId) -> Vec<TaskId> {
+
         if project_id == 0 || project_id > self.data::<Data>().project_id {
             return vec![];
         }
-        self.data::<Data>().project_tasks.get(&project_id).unwrap()
+        let proj = self.data::<Data>().project_tasks.get(&project_id);
+
+        if let Some(proj1) = proj {
+            return proj1;
+        } else {
+            return vec![];
+        }
     }
 
     default fn get_member_points(&self, assignee: AccountId) -> u32 {
@@ -549,25 +584,37 @@ where
     }
 
     default fn get_project(&self,project_id: ProjectId) -> Project {
+        let project = Project {
+            creator: ZERO_ADDRESS.into(),
+            description: String::from(""),
+        };
         if project_id == 0 || project_id > self.data::<Data>().project_id {
-            let project = Project {
-                creator: ZERO_ADDRESS.into(),
-                description: String::from(""),
-            };
             return project;
         }
-        self.data::<Data>().project.get(&project_id).unwrap()
+        let proj = self.data::<Data>().project.get(&project_id);
+
+        if let Some(proj1) = proj {
+            return proj1;
+        } else {
+            return project;
+        }
     }
 
     default fn get_proposal(&self,proposal_id: ProposalId) -> Proposal {
+        let proposal = Proposal {
+            creator: ZERO_ADDRESS.into(),
+            description: String::from(""),
+        };
         if proposal_id == 0 || proposal_id > self.data::<Data>().proposal_id {
-            let proposal = Proposal {
-                creator: ZERO_ADDRESS.into(),
-                description: String::from(""),
-            };
             return proposal;
         }
-        self.data::<Data>().proposal.get(&proposal_id).unwrap()
+        let proj = self.data::<Data>().proposal.get(&proposal_id);
+
+        if let Some(proj1) = proj {
+            return proj1;
+        } else {
+            return proposal;
+        }
     }
 
     default fn get_number_of_project_tasks(&self,project_id: ProjectId) -> u32 {
@@ -648,10 +695,11 @@ where
         }
     }
 
-    default fn create_task_internal(&mut self,caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
+    default fn create_task_internal(&mut self,description: String, caller: AccountId,assignee: AccountId, reviewer: AccountId, deadline: Timestamp,
          task_priority: TaskPriority, points: u32) -> TaskId {
         
         let task = Task {
+            description: description,
             assignee: assignee,
             reviewer: reviewer,
             owner: caller.clone(),
